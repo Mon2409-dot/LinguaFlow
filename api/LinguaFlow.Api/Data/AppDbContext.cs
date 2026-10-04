@@ -1,9 +1,11 @@
 ﻿using LinguaFlow.Api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace LinguaFlow.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<AppUser>(options)
 {
     public DbSet<Language> Languages => Set<Language>();
     public DbSet<Source> Sources => Set<Source>();
@@ -12,6 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        base.OnModelCreating(b);   // bắt buộc có dòng này khi dùng Identity
+
         b.Entity<Language>().HasIndex(x => x.Code).IsUnique();
         b.Entity<Language>().HasData(
             new Language { Id = 1, Code = "en", Name = "Tiếng Anh", LevelSystem = "CEFR" },
