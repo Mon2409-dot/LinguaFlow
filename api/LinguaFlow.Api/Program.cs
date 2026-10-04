@@ -11,6 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+
+var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+    ?? ["http://localhost:5173"];
+builder.Services.AddCors(o => o.AddPolicy("web", p => p
+    .WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
 
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
@@ -48,6 +54,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
+app.UseExceptionHandler();
 
 // Tạo sẵn 2 vai trò và tài khoản Admin (nếu có cấu hình)
 using (var scope = app.Services.CreateScope())
@@ -77,6 +84,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("web");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
