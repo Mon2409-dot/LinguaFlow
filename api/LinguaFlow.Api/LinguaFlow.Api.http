@@ -23,3 +23,66 @@ Content-Type: application/json
 @token = DAN_TOKEN_VAO_DAY
 GET {{host}}/api/auth/me
 Authorization: Bearer {{token}}
+### 4. Đăng nhập Admin
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@linguaflow.local",
+  "password": "MAT_KHAU_CUA_BAN"
+}
+
+### Dán token Admin vào đây
+@adminToken = DAN_TOKEN_ADMIN
+
+### 5. Tạo nguồn
+POST {{host}}/api/admin/sources
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Project Gutenberg",
+  "baseUrl": "https://www.gutenberg.org",
+  "license": "Public Domain",
+  "attribution": "Project Gutenberg"
+}
+
+### 6. Tạo sách (sourceId 1, languageId 1 = tiếng Anh)
+POST {{host}}/api/admin/books
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "sourceId": 1,
+  "languageId": 1,
+  "title": "Sách thử nghiệm",
+  "author": "Tác giả thử",
+  "level": "B1",
+  "isPublished": true
+}
+
+### 7. Thêm bài học vào sách số 1
+POST {{host}}/api/admin/books/1/lessons
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "orderNo": 1,
+  "title": "Bài 1",
+  "content": "Nội dung thử nghiệm."
+}
+
+### 8. Công khai: danh sách ngôn ngữ
+GET {{host}}/api/languages
+
+### 9. Công khai: danh sách sách tiếng Anh
+GET {{host}}/api/books?lang=en
+
+### 10. Công khai: chi tiết sách
+GET {{host}}/api/books/1
+
+### 11. Công khai: đọc bài học
+GET {{host}}/api/lessons/1
+
+### 12. Kiểm tra bảo mật: gọi API Admin KHÔNG có token (phải ra 401)
+GET {{host}}/api/admin/books

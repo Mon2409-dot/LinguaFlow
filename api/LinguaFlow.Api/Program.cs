@@ -49,13 +49,26 @@ builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
 
-// Tạo sẵn 2 vai trò nếu chưa có
+// Tạo sẵn 2 vai trò và tài khoản Admin (nếu có cấu hình)
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     foreach (var role in new[] { "Admin", "User" })
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    var adminEmail = app.Configuration["Admin:Email"];
+    var adminPassword = app.Configuration["Admin:Password"];
+    if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword)
+        && await userManager.FindByEmailAsync(adminEmail) is null)
+    {
+        var admin = new AppUser { UserName = adminEmail, Email = adminEmail, DisplayName = "Admin", EmailConfirmed = true };
+        var result = await userManager.CreateAsync(admin, adminPassword);
+        if (result.Succeeded) await userManager.AddToRoleAsync(admin, "Admin");
+        else app.Logger.LogWarning("Không tạo được tài khoản Admin: {Errors}",
+            string.Join("; ", result.Errors.Select(e => e.Description)));
+    }
 }
 
 if (app.Environment.IsDevelopment())
