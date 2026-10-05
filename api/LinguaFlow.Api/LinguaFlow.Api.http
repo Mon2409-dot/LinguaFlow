@@ -86,3 +86,73 @@ GET {{host}}/api/lessons/1
 
 ### 12. Kiểm tra bảo mật: gọi API Admin KHÔNG có token (phải ra 401)
 GET {{host}}/api/admin/books
+### 13. Admin thêm từ vựng vào bài 1 (cần sách 1 và bài 1 là tiếng Anh, languageId 1)
+POST {{host}}/api/admin/vocab
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "languageId": 1,
+  "lessonId": 1,
+  "word": "garden",
+  "meaning": "khu vườn",
+  "example": "She walked in the garden."
+}
+
+### 14. Xem từ vựng của bài 1 (công khai)
+GET {{host}}/api/lessons/1/vocab
+
+### 15. Đăng nhập người học thường
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Test12345"
+}
+
+### Dán token người học vào đây
+@userToken = DAN_TOKEN_NGUOI_HOC
+
+### 16. Thêm từ số 1 vào sổ từ của tôi
+POST {{host}}/api/me/vocab
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "vocabularyId": 1 }
+
+### 17. Xem sổ từ của tôi
+GET {{host}}/api/me/vocab
+Authorization: Bearer {{userToken}}
+
+### 18. Danh sách từ cần ôn hôm nay
+GET {{host}}/api/me/vocab/review
+Authorization: Bearer {{userToken}}
+
+### 19. Ôn từ số 1, trả lời đúng
+POST {{host}}/api/me/vocab/1/review
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "correct": true }
+
+### 20. Đánh dấu hoàn thành bài 1
+PUT {{host}}/api/me/progress/lessons/1
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "completed": true }
+
+### 21. Xem tiến độ
+GET {{host}}/api/me/progress
+Authorization: Bearer {{userToken}}
+
+### 22. Bảo mật: xem tiến độ không có token (phải ra 401)
+GET {{host}}/api/me/progress
+
+### 23. Bảo mật: người học thường gọi API Admin (phải ra 403)
+POST {{host}}/api/admin/vocab
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "languageId": 1, "word": "x", "meaning": "x" }

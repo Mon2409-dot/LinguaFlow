@@ -1,4 +1,5 @@
 ﻿using LinguaFlow.Api.Data;
+using LinguaFlow.Api.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,5 +18,17 @@ public class LessonsController(AppDbContext db) : ControllerBase
             .FirstOrDefaultAsync();
 
         return lesson is null ? NotFound() : Ok(lesson);
+    }
+
+    [HttpGet("{id:int}/vocab")]
+    public async Task<IActionResult> Vocab(int id)
+    {
+        var items = await db.Vocabularies.AsNoTracking()
+            .Where(v => v.LessonId == id && v.Lesson!.Book.IsPublished)
+            .OrderBy(v => v.Id)
+            .Select(v => new VocabItem(v.Id, v.LessonId, v.Language.Code, v.Word,
+                v.Reading, v.Meaning, v.Example, v.Extra))
+            .ToListAsync();
+        return Ok(items);
     }
 }

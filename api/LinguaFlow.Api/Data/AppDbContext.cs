@@ -11,6 +11,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Source> Sources => Set<Source>();
     public DbSet<Book> Books => Set<Book>();
     public DbSet<Lesson> Lessons => Set<Lesson>();
+    public DbSet<Vocabulary> Vocabularies => Set<Vocabulary>();
+    public DbSet<UserVocabulary> UserVocabularies => Set<UserVocabulary>();
+    public DbSet<LessonProgress> LessonProgresses => Set<LessonProgress>();
+    public DbSet<StudyActivity> StudyActivities => Set<StudyActivity>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -22,5 +26,29 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             new Language { Id = 2, Code = "ja", Name = "Tiếng Nhật", LevelSystem = "JLPT" },
             new Language { Id = 3, Code = "ru", Name = "Tiếng Nga", LevelSystem = "CEFR" },
             new Language { Id = 4, Code = "de", Name = "Tiếng Đức", LevelSystem = "CEFR" });
+
+        b.Entity<Vocabulary>(e =>
+        {
+            e.Property(v => v.Word).HasMaxLength(200);
+            e.HasIndex(v => new { v.LanguageId, v.Word });
+            e.HasOne(v => v.Language).WithMany().HasForeignKey(v => v.LanguageId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(v => v.Lesson).WithMany().HasForeignKey(v => v.LessonId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        b.Entity<UserVocabulary>(e =>
+        {
+            e.HasIndex(x => new { x.UserId, x.VocabularyId }).IsUnique();
+            e.HasIndex(x => new { x.UserId, x.NextReviewAt });
+        });
+
+        b.Entity<LessonProgress>().HasIndex(x => new { x.UserId, x.LessonId }).IsUnique();
+
+        b.Entity<StudyActivity>(e =>
+        {
+            e.HasIndex(x => new { x.UserId, x.Day }).IsUnique();
+            e.HasOne<AppUser>().WithMany().HasForeignKey(x => x.UserId);
+        });
     }
 }
