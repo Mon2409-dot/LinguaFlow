@@ -52,9 +52,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<ActivityService>();   // thuộc bước 7: nếu chưa tạo ActivityService.cs thì xóa dòng này
 
 var app = builder.Build();
+
 app.UseExceptionHandler();
 
 // Tạo sẵn 2 vai trò và tài khoản Admin (nếu có cấu hình)
@@ -82,6 +83,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "LinguaFlow API"));
 }
 
 app.UseHttpsRedirection();
