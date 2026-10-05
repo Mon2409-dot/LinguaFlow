@@ -15,6 +15,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<UserVocabulary> UserVocabularies => Set<UserVocabulary>();
     public DbSet<LessonProgress> LessonProgresses => Set<LessonProgress>();
     public DbSet<StudyActivity> StudyActivities => Set<StudyActivity>();
+    public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -49,6 +50,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             e.HasIndex(x => new { x.UserId, x.Day }).IsUnique();
             e.HasOne<AppUser>().WithMany().HasForeignKey(x => x.UserId);
+        });
+
+        b.Entity<ImportJob>(e =>
+        {
+            e.Property(x => x.Url).HasMaxLength(1000);
+            e.Property(x => x.Status).HasMaxLength(20);
+            e.Property(x => x.ContentHash).HasMaxLength(64);
+            e.HasIndex(x => x.Status);
+            e.HasOne(x => x.Source).WithMany().HasForeignKey(x => x.SourceId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Language).WithMany().HasForeignKey(x => x.LanguageId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Book).WithMany().HasForeignKey(x => x.BookId).OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

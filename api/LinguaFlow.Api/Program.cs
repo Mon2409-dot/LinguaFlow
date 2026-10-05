@@ -52,7 +52,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<ActivityService>();   // thuộc bước 7: nếu chưa tạo ActivityService.cs thì xóa dòng này
+builder.Services.AddScoped<ActivityService>();
+builder.Services.AddHttpClient("importer", c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(30);
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("LinguaFlowImporter/1.0 (educational project)");
+});
+builder.Services.AddScoped<ContentImporter>();
+builder.Services.AddHostedService<ImportWorker>();
 
 var app = builder.Build();
 
